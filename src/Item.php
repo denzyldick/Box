@@ -6,5 +6,5 @@ namespace Result;
 
 interface Item
 {
-    public function grab();
+  public function grab(): array |object;
 }

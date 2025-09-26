@@ -13,7 +13,8 @@
   "license": "MIT",
   "autoload": {
     "psr-4": {
-      "Result\\": "src/"
+      "Result\\": "src/",
+      "Tests\\Dummy\\":"tests/dummy/"
     }
   },
   "authors": [

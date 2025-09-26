@@ -2,67 +2,85 @@
 
 use Result\Result;
 use PHPUnit\Framework\TestCase;
+use Tests\Dummy\Client;
+use Tests\Dummy\OrderService;
+use Tests\Dummy\OrderException;
 
 /**
  */
 class ResultTest extends TestCase
 {
-    /**
-     * Test the result error handling.
-     *
-     * @return void
-     */
-    public function testResult(): void
-    {
-        $client = new Client();
+  /**
+   * Test the result error handling.
+   *
+   * @return void
+   */
+  public function testResult(): void
+  {
+    $client = new Client();
 
-        $amount = match ($client->get()) {
-            Result::Ok => (new OrderService())->handle(Result::Ok->collect()),
-            Result::Error => function () {
-                return 0;
-            }
-        };
+    $amount = match ($client->get()) {
+      Result::Ok => function () {
+        return (new OrderService())->handle(Result::Ok->collect());
+      },
+      Result::Error => function () {
+        return 0;
+      }
+    };
 
-        $actual = "Hello world";
-        $this->assertEquals($amount, $actual);
-    }
+    $actual = "Hello world";
+    $this->assertEquals($amount(), $actual);
+  }
 
-    /**
-     * Test the result error handling.
-     *
-     * @return void
-     */
-    public function testIgnoreException(): void
-    {
-        $client = new Client();
+  /**
+   * Test the result error handling.
+   *
+   * @return void
+   */
+  public function testIgnoreException(): void
+  {
+    $client = new Client();
+    $client::$simulateError = true;
+    $amount = match ($client->get()) {
+      Result::Ok => function () {
 
-        $amount = match ($client->get()) {
-            Result::Ok => (new OrderService())->handle(Result::Ok->collect()),
-            Result::Error => function () {
-                return 0;
-            }
-        };
+        $collected = Result::Ok->collect();
+        return (new OrderService())->handle($collected);
+      },
+      Result::Error => function () {
+        return 0;
+      }
+    };
 
-        $actual = 0;
-        $this->assertEquals($amount, $actual);
-    }
+    $actual = 0;
+    $this->assertEquals($amount(), $actual);
+  }
 
-    public function testException()
-    {
-        $client = new Client();
+  public function testException()
+  {
+    $client = new Client();
 
-        $client::$amount = 5;
+    $client::$simulateError = true;
 
-        $error = match ($client->get()) {
-            Result::Ok => function () {
+    $error = match ($client->get()) {
+      Result::Ok => function () {},
+      Result::Error => function () {
+        return Result::Error->exception();
+      }
+    };
 
-            },
-            Result::Error => function () {
-                return new OrderException(Result::Error->collect());
-            }
-        };
+    $message = "Dummy Exception.";
+    $this->assertEquals($message, $error()->getMessage());
+  }
 
-        $message = "Dummy Exception.";
-        $this->assertEquals($message, $error->getMessage());
-    }
+  public function testTranformator()
+  {
+    $client = new Client();
+    $activeUsers = $client->list();
+
+    $activeUsers->map(function ($user) {
+      $user['verified'] =  true;
+      return $user;
+    })->then(function () {});
+  }
 }

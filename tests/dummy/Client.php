@@ -1,0 +1,41 @@
+<?php
+
+namespace Tests\Dummy;
+
+use Result\Item;
+use Result\Purse;
+use Result\Result;
+use UserList;
+
+class Client implements Item
+{
+
+  public static bool $simulateError = false;
+  /**
+   *
+   */
+  public function get(): Result
+  {
+    return Purse::put($this);
+  }
+
+
+  /**
+   * @return array
+   * @throws Exception
+   */
+  public function grab(): Response
+  {
+    if (static::$simulateError) {
+      throw new \Exception("Dummy Exception.");
+    }
+
+    return new Response("Hello world");
+  }
+
+  public function list()
+  {
+    $new = new UserList();
+    return Purse::put($new);
+  }
+}
