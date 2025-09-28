@@ -35,7 +35,15 @@ class Client implements Item
 
   public function list()
   {
-    $new = new UserList();
-    return Purse::put($new);
+    return Result::Ok->hold([
+      [
+        'name' => 'hello',
+        'active' => true,
+      ],
+      [
+        'name' => 'world',
+        'active' => false,
+      ]
+    ]);
   }
 }

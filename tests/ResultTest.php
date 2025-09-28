@@ -73,14 +73,37 @@ class ResultTest extends TestCase
     $this->assertEquals($message, $error()->getMessage());
   }
 
-  public function testTranformator()
+  public function testMapTranformator()
   {
-    $client = new Client();
-    $activeUsers = $client->list();
+    $users = Result::Ok->hold([
+      [
+        'name' => 'hello',
+        'active' => true,
+      ],
+      [
+        'name' => 'world',
+        'active' => false,
+      ]
+    ]);
 
-    $activeUsers->map(function ($user) {
-      $user['verified'] =  true;
-      return $user;
-    })->then(function () {});
+    $t = $users->map(function ($item) {
+      $item['active'] = true;
+      return $item;
+    })->unwrap();
+    $this->assertEquals(true, $t[0]['active']);
+    $this->assertEquals(true, $t[1]['active']);
+  }
+
+  public function testFilterTranformator()
+  {
+    $active = Result::Ok->hold([
+      true,
+      false,
+      true
+    ])->filter(function ($item) {
+
+      return $item;
+    })->unwrap();
+    $this->assertEquals(count($active), 2);
   }
 }

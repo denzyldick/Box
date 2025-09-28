@@ -26,9 +26,7 @@ enum Result
   public function hold(array|object $object): self
   {
 
-    $hash = spl_object_hash($object);
-
-    Hold::$map[$hash] = [];
+    $hash = 'test';
     Hold::$map[$hash] = $object;
     return $this;
   }
@@ -50,16 +48,28 @@ enum Result
   }
 
 
-  public function map(callable $callback): array
+  public function map(callable $callback): self
   {
-    return array_map($callback, Hold::pop());
+    Hold::$map['test'] = array_map($callback, Hold::pop());
+    return $this;
+  }
+  public function filter(callable $callback): self
+  {
+    Hold::$map['test'] = array_filter(Hold::pop(), $callback);
+    return $this;
   }
 
-  public function isErr(): bool {}
+  public function isErr(): bool
+  {
+    return true;
+  }
 
-  public function isOk(): bool {}
+  public function isOk(): bool
+  {
+    return true;
+  }
 
-  public function unWrap(): object
+  public function unWrap(): array|object
   {
     return Hold::pop();
   }
