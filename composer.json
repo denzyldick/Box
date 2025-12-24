@@ -3,9 +3,7 @@
   "description": "Another type of error handeling in PHP.",
   "type": "library",
   "require-dev": {
-    "phpunit/phpunit": "11.4.x-dev",
-    "phpstan/phpstan": "2.0.x-dev",
-    "denzyl/phanalist": "dev-main"
+    "phpunit/phpunit": "^13.0@dev"
   },
   "scripts": {
     "test": "vendor/bin/phpunit"
@@ -14,7 +12,7 @@
   "autoload": {
     "psr-4": {
       "Result\\": "src/",
-      "Tests\\Dummy\\":"tests/dummy/"
+      "Tests\\Dummy\\": "tests/dummy/"
     }
   },
   "authors": [
@@ -22,6 +20,5 @@
       "name": "Denzyl Dick"
     }
   ],
-  "minimum-stability": "dev",
-  "require": {}
+  "minimum-stability": "dev"
 }

@@ -2,48 +2,47 @@
 
 namespace Tests\Dummy;
 
+use Result\Box;
 use Result\Item;
-use Result\Purse;
 use Result\Result;
 use UserList;
 
 class Client implements Item
 {
+    public static bool $simulateError = false;
 
-  public static bool $simulateError = false;
-  /**
-   *
-   */
-  public function get(): Result
-  {
-    return Purse::put($this);
-  }
-
-
-  /**
-   * @return array
-   * @throws Exception
-   */
-  public function grab(): Response
-  {
-    if (static::$simulateError) {
-      throw new \Exception("Dummy Exception.");
+    /**
+     *
+     */
+    public function get(): Result
+    {
+        return Box::put($this);
     }
 
-    return new Response("Hello world");
-  }
+    /**
+     * @return array
+     * @throws Exception
+     */
+    public function grab(): Response
+    {
+        if (static::$simulateError) {
+            throw new \Exception('Dummy Exception.');
+        }
 
-  public function list()
-  {
-    return Result::Ok->hold([
-      [
-        'name' => 'hello',
-        'active' => true,
-      ],
-      [
-        'name' => 'world',
-        'active' => false,
-      ]
-    ]);
-  }
+        return new Response('Hello world');
+    }
+
+    public function list()
+    {
+        return Result::Ok->hold([
+            [
+                'name' => 'hello',
+                'active' => true,
+            ],
+            [
+                'name' => 'world',
+                'active' => false,
+            ],
+        ]);
+    }
 }
