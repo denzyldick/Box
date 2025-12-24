@@ -25,8 +25,6 @@ class Client {
 }
 ```
 
-````
-
 Somewhere else in the codebase:
 
 ```php
@@ -88,4 +86,7 @@ This library does **not** pretend PHP suddenly has algebraic data types or check
 > If an error can happen, the caller should have to _look at it_.
 
 Box makes that unavoidable.
-````
+
+```
+
+```
