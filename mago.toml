@@ -4,7 +4,7 @@ php-version = "8.5.0"
 
 [source]
 workspace = "."
-paths = ["src/", "tests/dummy/"]
+paths = ["src/", "tests/"]
 includes = ["vendor"]
 excludes = []
 
@@ -34,3 +34,4 @@ strict-list-index-checks = true
 no-boolean-literal-comparison = true
 check-missing-type-hints = true
 register-super-globals = true
+

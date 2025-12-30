@@ -4,7 +4,6 @@ use Result\Result;
 use PHPUnit\Framework\TestCase;
 use Tests\Dummy\Client;
 use Tests\Dummy\OrderService;
-use Tests\Dummy\OrderException;
 
 /**
  */
@@ -101,7 +100,6 @@ class ResultTest extends TestCase
           false,
           true
         ])->filter(function ($item) {
-
             return $item;
         })->unwrap();
         $this->assertEquals(count($active), 2);

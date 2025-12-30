@@ -1,19 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Dummy;
 
 use Result\Box;
 use Result\Item;
 use Result\Result;
-use UserList;
 
 class Client implements Item
 {
     public static bool $simulateError = false;
 
-    /**
-     *
-     */
     public function get(): Result
     {
         return Box::put($this);
