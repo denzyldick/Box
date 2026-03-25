@@ -4,48 +4,40 @@ namespace Tests;
 
 use PHPUnit\Framework\TestCase;
 use Result\Result;
-use Result\Hold;
 
 class TypeSafetyTest extends TestCase
 {
-    public function setUp(): void
+    public function test_error_cannot_hold_non_exception()
     {
-        Hold::reset();
+        $this->expectException(\TypeError::class);
+        
+        // Error factory strictly requires a Throwable
+        Result::error((object)['status' => 'I am actually happy']);
     }
 
-    public function test_error_can_hold_non_exception()
+    public function test_ok_cannot_hold_exception()
     {
-        // Issue 1: Semantics are not enforced.
-        // You can hold a "Happy User" inside an Error result.
-        Result::Error->hold((object)['status' => 'I am actually happy']);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Result::ok cannot hold a Throwable. Use Result::error instead.");
         
-        $val = Result::Error->collect(); // Works, but confusing logic
-        
-        $this->assertEquals('I am actually happy', $val->status);
-    }
-
-    public function test_ok_can_hold_exception()
-    {
-        // Issue 2: You can accidentally hold an Exception in OK
-        Result::Ok->hold(new \Exception("Bad things"));
-        
-        $val = Result::Ok->collect();
-        
-        $this->assertInstanceOf(\Exception::class, $val);
+        Result::ok(new \Exception("Bad things"));
     }
     
-    public function test_collect_throws_type_error_on_array()
+    public function test_collect_supports_array()
     {
-        // Issue 3: Return Type Lie
-        // logic says returns `object`, but if I push array...
-        Result::Ok->hold(['id' => 1]);
+        $res = Result::ok(['id' => 1]);
         
-        // This fails with TypeError because collect(): object
-        try {
-            Result::Ok->collect();
-            $this->fail("Should strictly fail type check");
-        } catch (\TypeError $e) {
-            $this->assertTrue(true);
-        }
+        $val = $res->collect();
+        $this->assertEquals(1, $val['id']);
+    }
+
+    public function test_cannot_collect_from_error()
+    {
+        $res = Result::error(new \Exception("fail"));
+        
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Cannot collect value from an Error result.");
+        
+        $res->collect();
     }
 }

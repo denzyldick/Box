@@ -1,6 +1,7 @@
 <?php
 
 use Result\Result;
+use Result\ResultState;
 use PHPUnit\Framework\TestCase;
 use Tests\Dummy\Client;
 use Tests\Dummy\OrderService;
@@ -17,12 +18,13 @@ class ResultTest extends TestCase
     public function testResult(): void
     {
         $client = new Client();
+        $result = $client->get();
 
-        $amount = match ($client->get()) {
-            Result::Ok => function () {
-                return (new OrderService())->handle(Result::Ok->collect());
+        $amount = match ($result->state()) {
+            ResultState::Ok => function () use ($result) {
+                return (new OrderService())->handle($result->collect());
             },
-            Result::Error => function () {
+            ResultState::Error => function () {
                 return 0;
             }
         };
@@ -40,13 +42,14 @@ class ResultTest extends TestCase
     {
         $client = new Client();
         $client::$simulateError = true;
-        $amount = match ($client->get()) {
-            Result::Ok => function () {
+        $result = $client->get();
 
-                $collected = Result::Ok->collect();
+        $amount = match ($result->state()) {
+            ResultState::Ok => function () use ($result) {
+                $collected = $result->collect();
                 return (new OrderService())->handle($collected);
             },
-            Result::Error => function () {
+            ResultState::Error => function () {
                 return 0;
             }
         };
@@ -58,13 +61,13 @@ class ResultTest extends TestCase
     public function testException()
     {
         $client = new Client();
-
         $client::$simulateError = true;
+        $result = $client->get();
 
-        $error = match ($client->get()) {
-            Result::Ok => function () {},
-            Result::Error => function () {
-                return Result::Error->exception();
+        $error = match ($result->state()) {
+            ResultState::Ok => function () {},
+            ResultState::Error => function () use ($result) {
+                return $result->exception();
             }
         };
 
@@ -74,7 +77,7 @@ class ResultTest extends TestCase
 
     public function testMapTranformator()
     {
-        $users = Result::Ok->hold([
+        $users = Result::ok([
           [
             'name' => 'hello',
             'active' => true,
@@ -85,23 +88,23 @@ class ResultTest extends TestCase
           ]
         ]);
 
-        $t = $users->map(function ($item) {
+        $t = $users->mapEach(function ($item) {
             $item['active'] = true;
             return $item;
-        })->unwrap();
+        })->unWrap();
         $this->assertEquals(true, $t[0]['active']);
         $this->assertEquals(true, $t[1]['active']);
     }
 
     public function testFilterTranformator()
     {
-        $active = Result::Ok->hold([
+        $active = Result::ok([
           true,
           false,
           true
-        ])->filter(function ($item) {
+        ])->filterEach(function ($item) {
             return $item;
-        })->unwrap();
-        $this->assertEquals(count($active), 2);
+        })->unWrap();
+        $this->assertEquals(2, count($active));
     }
 }

@@ -32,7 +32,7 @@ class Client implements Item
 
     public function list()
     {
-        return Result::Ok->hold([
+        return Result::ok([
             [
                 'name' => 'hello',
                 'active' => true,

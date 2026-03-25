@@ -1,88 +1,149 @@
-# Box
+# Result
 
-Box is a small pattern/library I have been using internally to change how errors are handled in PHP.
+`Result` is a modern, type-safe error handling library for PHP 8.1+. It replaces implicit, optional exceptions with an explicit **Result type** that forces callers to acknowledge both success and failure.
 
-It addresses a fundamental limitation of PHP’s exception model: **you cannot make error handling mandatory for the caller**.
-
-There is nothing _wrong_ with exceptions themselves, but they are **optional by design**. A caller can always ignore them, intentionally or accidentally.
-
-Box exists to make that choice explicit.
+Inspired by Rust's `Result` type, this library brings functional error handling and "railway oriented programming" to PHP with full support for **generics**, **immutability**, and **lazy evaluation**.
 
 ---
 
-## The Problem
+## 🚀 The Core Concept
 
-Consider a typical PHP class:
+Instead of throwing exceptions that might be accidentally ignored, your methods return a `Result` object.
 
 ```php
-<?php
-
-class Client {
-    public function getSomething(): string {
-        // ...
-        throw new Exception("Hello world");
-    }
+/**
+ * @return Result<User, UserNotFoundException>
+ */
+public function findUser(int $id): Result {
+    $user = $this->db->find($id);
+    
+    return Result::when(
+        $user !== null,
+        $user,
+        new UserNotFoundException("User $id not found")
+    );
 }
 ```
 
-Somewhere else in the codebase:
+The caller **must** now explicitly handle the result:
 
 ```php
-<?php
+$result = $userRepo->findUser(123);
 
-$something = (new Client())->getSomething();
-echo $something;
-```
-
-As the author of `Client`, you **cannot enforce** that the caller handles the error.
-
-Yes, a `try/catch` _could_ be used — but nothing forces the caller to do so. If the exception is thrown and not caught, the program crashes. If the caller chooses to “only code the happy path”, the type system offers no resistance.
-
-This is not a tooling issue. It is a language-level limitation.
-
----
-
-## What Box Changes
-
-Box replaces implicit, optional error handling with **explicit, mandatory handling**.
-
-Instead of throwing, a method returns a value that represents **both success and failure**. The caller must inspect it.
-
-```php
-$something = match ((new Client())->getSomething()) {
-    Result::Ok => function () {
-        echo Result::Ok->collect();
-    },
-    Result::Error => function () {
-        // error must be acknowledged here
-    }
+// Using Pattern Matching
+$message = match ($result->state()) {
+    ResultState::Ok => "Found user: " . $result->collect()->name,
+    ResultState::Error => "Error: " . $result->exception()->getMessage(),
 };
 ```
 
-This forces the caller to make a decision:
+---
 
-- Handle the error
-- Explicitly ignore it
+## 🛠️ Feature Highlights
 
-But **never accidentally skip it**.
+- **Immutable by Design**: Every transformation returns a new `Result` instance.
+- **Generic Support**: Fully annotated for PHPStan/Psalm to track your types.
+- **Railway Oriented**: Chain operations safely without deeply nested `if` checks.
+- **Batch Processing**: Tools to combine or partition groups of results.
+- **PHP 8.4 Ready**: Optimized for modern PHP standards.
 
 ---
 
-## Why This Matters
+## 📖 Detailed Use Cases
 
-- No hidden control flow
-- No unhandled runtime crashes
-- Error handling becomes part of the API contract
-- Intent is explicit and visible at the call site
+### 1. Creating Results
+```php
+// Direct creation
+$ok = Result::ok("Happy value");
+$err = Result::error(new Exception("Sad error"));
 
-This pattern is inspired by `Result`-based error handling found in languages like Rust, adapted to what is realistically possible in PHP.
+// Functional "try" wrapper (captures any thrown Exception)
+$res = Result::try(fn() => $this->riskyOperation());
 
-This library does **not** pretend PHP suddenly has algebraic data types or checked exceptions. It simply provides a better failure model than `throw`-and-pray.
+// Conditional creation
+$res = Result::when($age >= 18, "Access Granted", new Exception("Too young"));
+```
+
+### 2. Functional Transformations (Railway Pattern)
+Transform values only if the result is `Ok`. If it's an `Error`, the transformations are skipped automatically.
+
+```php
+$nickname = $userRepo->findUser(123)
+    ->map(fn(User $u) => $u->name)
+    ->map(fn(string $name) => strtolower($name))
+    ->unwrapOr("guest");
+```
+
+### 3. Handling Collections
+Specially designed methods for dealing with results that hold iterables.
+
+```php
+$activeUsers = Result::ok($userList)
+    ->filterEach(fn(User $u) => $u->isActive)
+    ->mapEach(fn(User $u) => $u->email)
+    ->collect(); // returns array of emails
+```
+
+### 4. Batch Operations
+Handle multiple independent results at once.
+
+```php
+$results = [$res1, $res2, $res3];
+
+// Fail-fast: Returns Result<array, E> (Ok if all are Ok, else the first Error)
+$all = Result::combine($results);
+
+// Collect all: Returns ['ok' => [...], 'error' => [...]]
+$partitioned = Result::partition($results);
+
+// First Success: Returns the first Ok, or the first Error if all failed
+$any = Result::any($results);
+```
+
+### 5. Safe Unwrapping
+```php
+$val = $res->collect();                // Throws if Error
+$val = $res->unwrapOr("default");      // Returns "default" if Error
+$val = $res->unwrapOrElse(fn($e) => ...); // Lazy default via closure
+$val = $res->expect("User must exist"); // Throws with custom message if Error
+```
+
+### 6. Logical Composition
+```php
+// Combine two independent results into a tuple Result<[A, B], E>
+$tuple = $res1->zip($res2);
+
+// Logical AND/OR
+$res = $r1->and($r2); // $r2 if $r1 is Ok
+$res = $r1->or($r2);  // $r1 if $r1 is Ok, else $r2
+```
+
+### 7. Interoperability
+```php
+// JSON Serialization
+echo json_encode(Result::ok("hi")); // {"state":"ok","value":"hi"}
+
+// Iteration (treats Result as a collection of 0 or 1 items)
+foreach ($result as $value) {
+    echo $value;
+}
+
+// Debugging
+echo (string) $result; // Result::Ok('Happy value')
+```
 
 ---
 
-## Philosophy
+## 🔧 Installation
 
-> If an error can happen, the caller should have to _look at it_.
+```bash
+composer require denzyl/result
+```
 
-Box makes that unavoidable.
+---
+
+## 📜 Philosophy
+
+> "If an error can happen, the caller should have to look at it."
+
+This library does not pretend PHP has checked exceptions. It simply provides a better failure model than `throw`-and-pray. It makes your API contracts honest and your code's intent explicit.
