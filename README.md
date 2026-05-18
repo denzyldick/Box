@@ -372,7 +372,7 @@ echo (string) $result;                     // Result::Ok('hi')
 ## Installation
 
 ```bash
-composer require denzyl/result
+composer require denzyl/box
 ```
 
 ## Development

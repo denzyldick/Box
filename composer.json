@@ -1,5 +1,5 @@
 {
-  "name": "denzyl/result",
+  "name": "denzyl/box",
   "description": "A type-safe Result type for explicit error handling in PHP.",
   "type": "library",
   "keywords": [
