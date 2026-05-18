@@ -22,7 +22,9 @@ class ResultTest extends TestCase
 
         $amount = match ($result->state()) {
             ResultState::Ok => function () use ($result) {
-                return new OrderService()->handle($result->collect());
+                $service = new OrderService();
+
+                return $service->handle($result->collect());
             },
             ResultState::Error => function () {
                 return 0;
@@ -47,7 +49,9 @@ class ResultTest extends TestCase
         $amount = match ($result->state()) {
             ResultState::Ok => function () use ($result) {
                 $collected = $result->collect();
-                return new OrderService()->handle($collected);
+                $service = new OrderService();
+
+                return $service->handle($collected);
             },
             ResultState::Error => function () {
                 return 0;
