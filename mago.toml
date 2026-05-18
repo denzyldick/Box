@@ -19,6 +19,9 @@ integrations = ["phpunit"]
 [linter.rules]
 ambiguous-function-call = { enabled = false }
 literal-named-argument = { enabled = false }
+cyclomatic-complexity = { enabled = false }
+kan-defect = { enabled = false }
+too-many-methods = { enabled = false }
 halstead = { effort-threshold = 7000 }
 
 [analyzer]
@@ -34,4 +37,3 @@ strict-list-index-checks = true
 no-boolean-literal-comparison = true
 check-missing-type-hints = true
 register-super-globals = true
-

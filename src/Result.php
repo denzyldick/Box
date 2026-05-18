@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Result;
 
-use Throwable;
+use Countable;
+use IteratorAggregate;
 use JsonSerializable;
 use Stringable;
-use IteratorAggregate;
-use Countable;
+use Throwable;
 use Traversable;
 
 enum ResultState: string
@@ -29,7 +29,7 @@ final readonly class Result implements JsonSerializable, Stringable, IteratorAgg
      */
     private function __construct(
         private ResultState $state,
-        private mixed $value
+        private mixed $value,
     ) {}
 
     /**
@@ -40,7 +40,7 @@ final readonly class Result implements JsonSerializable, Stringable, IteratorAgg
     public static function ok(mixed $value): self
     {
         if ($value instanceof Throwable) {
-            throw new \InvalidArgumentException("Result::ok cannot hold a Throwable. Use Result::error instead.");
+            throw new \InvalidArgumentException('Result::ok cannot hold a Throwable. Use Result::error instead.');
         }
         return new self(ResultState::Ok, $value);
     }
@@ -108,8 +108,8 @@ final readonly class Result implements JsonSerializable, Stringable, IteratorAgg
      */
     public static function any(array $results): self
     {
-        if (empty($results)) {
-            return self::error(new \InvalidArgumentException("Cannot call any() on an empty array."));
+        if ($results === []) {
+            return self::error(new \InvalidArgumentException('Cannot call any() on an empty array.'));
         }
 
         foreach ($results as $result) {
@@ -177,7 +177,7 @@ final readonly class Result implements JsonSerializable, Stringable, IteratorAgg
     public function collect(): mixed
     {
         if ($this->isErr()) {
-            throw new \RuntimeException("Cannot collect value from an Error result.");
+            throw new \RuntimeException('Cannot collect value from an Error result.');
         }
         return $this->value;
     }
@@ -188,7 +188,7 @@ final readonly class Result implements JsonSerializable, Stringable, IteratorAgg
     public function exception(): Throwable
     {
         if ($this->isOk()) {
-            throw new \RuntimeException("Cannot get exception from an Ok result.");
+            throw new \RuntimeException('Cannot get exception from an Ok result.');
         }
         return $this->value;
     }
@@ -267,7 +267,7 @@ final readonly class Result implements JsonSerializable, Stringable, IteratorAgg
         }
 
         if (!is_iterable($this->value)) {
-            throw new \LogicException("mapEach can only be called on a Result holding an iterable.");
+            throw new \LogicException('mapEach can only be called on a Result holding an iterable.');
         }
 
         $mapped = [];
@@ -293,7 +293,7 @@ final readonly class Result implements JsonSerializable, Stringable, IteratorAgg
 
         $newResult = $callback($this->value);
         if (!$newResult instanceof self) {
-            throw new \LogicException("flatMap callback must return a Result instance.");
+            throw new \LogicException('flatMap callback must return a Result instance.');
         }
 
         return $newResult;
@@ -304,7 +304,7 @@ final readonly class Result implements JsonSerializable, Stringable, IteratorAgg
      */
     public function flatten(): self
     {
-        if ($this->isErr() || !($this->value instanceof self)) {
+        if ($this->isErr() || !$this->value instanceof self) {
             return $this;
         }
 
@@ -354,7 +354,7 @@ final readonly class Result implements JsonSerializable, Stringable, IteratorAgg
         }
         $newError = $callback($this->value);
         if (!$newError instanceof Throwable) {
-            throw new \LogicException("mapError callback must return a Throwable.");
+            throw new \LogicException('mapError callback must return a Throwable.');
         }
         return self::error($newError);
     }
@@ -373,7 +373,7 @@ final readonly class Result implements JsonSerializable, Stringable, IteratorAgg
             return $this;
         }
 
-        return self::error(new \RuntimeException("Value filtered out."));
+        return self::error(new \RuntimeException('Value filtered out.'));
     }
 
     /**
@@ -388,7 +388,7 @@ final readonly class Result implements JsonSerializable, Stringable, IteratorAgg
         }
 
         if (!is_iterable($this->value)) {
-            throw new \LogicException("filterEach can only be called on a Result holding an iterable.");
+            throw new \LogicException('filterEach can only be called on a Result holding an iterable.');
         }
 
         $filtered = [];
@@ -552,14 +552,12 @@ final readonly class Result implements JsonSerializable, Stringable, IteratorAgg
 
     public function __toString(): string
     {
-        $valStr = is_object($this->value) 
-            ? get_debug_type($this->value) 
-            : var_export($this->value, true);
+        $valStr = is_object($this->value) ? get_debug_type($this->value) : var_export($this->value, true);
 
         return sprintf(
             'Result::%s(%s)',
             ucfirst($this->state->value),
-            $this->isOk() ? $valStr : $this->value->getMessage()
+            $this->isOk() ? $valStr : $this->value->getMessage(),
         );
     }
 

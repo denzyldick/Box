@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Result;
 
-use Throwable;
-
 /**
  * @template T
  */

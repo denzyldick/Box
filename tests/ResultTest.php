@@ -1,8 +1,8 @@
 <?php
 
+use PHPUnit\Framework\TestCase;
 use Result\Result;
 use Result\ResultState;
-use PHPUnit\Framework\TestCase;
 use Tests\Dummy\Client;
 use Tests\Dummy\OrderService;
 
@@ -22,14 +22,14 @@ class ResultTest extends TestCase
 
         $amount = match ($result->state()) {
             ResultState::Ok => function () use ($result) {
-                return (new OrderService())->handle($result->collect());
+                return new OrderService()->handle($result->collect());
             },
             ResultState::Error => function () {
                 return 0;
-            }
+            },
         };
 
-        $actual = "Hello world";
+        $actual = 'Hello world';
         $this->assertEquals($amount(), $actual);
     }
 
@@ -47,11 +47,11 @@ class ResultTest extends TestCase
         $amount = match ($result->state()) {
             ResultState::Ok => function () use ($result) {
                 $collected = $result->collect();
-                return (new OrderService())->handle($collected);
+                return new OrderService()->handle($collected);
             },
             ResultState::Error => function () {
                 return 0;
-            }
+            },
         };
 
         $actual = 0;
@@ -68,24 +68,24 @@ class ResultTest extends TestCase
             ResultState::Ok => function () {},
             ResultState::Error => function () use ($result) {
                 return $result->exception();
-            }
+            },
         };
 
-        $message = "Dummy Exception.";
+        $message = 'Dummy Exception.';
         $this->assertEquals($message, $error()->getMessage());
     }
 
     public function testMapTranformator()
     {
         $users = Result::ok([
-          [
-            'name' => 'hello',
-            'active' => true,
-          ],
-          [
-            'name' => 'world',
-            'active' => false,
-          ]
+            [
+                'name' => 'hello',
+                'active' => true,
+            ],
+            [
+                'name' => 'world',
+                'active' => false,
+            ],
         ]);
 
         $t = $users->mapEach(function ($item) {
@@ -99,9 +99,9 @@ class ResultTest extends TestCase
     public function testFilterTranformator()
     {
         $active = Result::ok([
-          true,
-          false,
-          true
+            true,
+            false,
+            true,
         ])->filterEach(function ($item) {
             return $item;
         })->unWrap();

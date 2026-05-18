@@ -1,6 +1,6 @@
 # Result
 
-`Result` is a modern, type-safe error handling library for PHP 8.1+. It replaces implicit, optional exceptions with an explicit **Result type** that forces callers to acknowledge both success and failure.
+`Result` is a modern, type-safe error handling library for PHP 8.2+. It replaces implicit, optional exceptions with an explicit **Result type** that forces callers to acknowledge both success and failure.
 
 Inspired by Rust's `Result<T, E>` type, this library brings functional error handling and "railway oriented programming" to PHP with full support for **generics** (via PhpDoc), **immutability**, and **composition**.
 
@@ -373,6 +373,19 @@ echo (string) $result;                     // Result::Ok('hi')
 
 ```bash
 composer require denzyl/result
+```
+
+## Development
+
+```bash
+composer install
+composer ci
+```
+
+The release gate validates Composer metadata, checks Mago formatting, runs Mago linting, runs Phanalist against `src/`, and executes the PHPUnit suite. For a local Phanalist checkout, run:
+
+```bash
+PHANALIST_BIN=../phanalist/phanalist composer phanalist
 ```
 
 ---
