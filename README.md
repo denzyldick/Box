@@ -1,6 +1,6 @@
-# Result
+# Box
 
-`Result` is a modern, type-safe error handling library for PHP 8.2+. It replaces implicit, optional exceptions with an explicit **Result type** that forces callers to acknowledge both success and failure.
+`Box` is a modern, type-safe error handling library for PHP 8.2+. It replaces implicit, optional exceptions with an explicit **Result type** that forces callers to acknowledge both success and failure.
 
 Inspired by Rust's `Result<T, E>` type, this library brings functional error handling and "railway oriented programming" to PHP with full support for **generics** (via PhpDoc), **immutability**, and **composition**.
 
